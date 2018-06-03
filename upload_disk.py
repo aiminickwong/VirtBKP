@@ -1,3 +1,4 @@
+#!/bin/python
 import subprocess
 import logging
 import os
@@ -7,6 +8,7 @@ import ssl
 import ConfigParser
 import sys
 import time
+import virtbkp_utils
 
 from urlparse import urlparse
 from httplib import HTTPSConnection
@@ -46,10 +48,10 @@ system_service = connection.system_service()
 #
 # 2. The disk initial size must be bigger or the same as the size of the data
 #    you will upload.
-cmd="qemu-img info "+ qcowfile + "|grep 'virtual size'|awk '{print $4}'|sed 's/(//g'"
-size=int(subprocess.check_output(cmd, shell=True))
-
-provisioned_size = size
+#cmd="qemu-img info "+ qcowfile + "|grep 'virtual size'|awk '{print $4}'|sed 's/(//g'"
+#size=int(subprocess.check_output(cmd, shell=True))
+utils = virtbkp_utils.virtbkp_utils()
+provisioned_size = utils.get_qcow_size(qcowfile)
 
 disks_service = connection.system_service().disks_service()
 disk = disks_service.add(
@@ -110,7 +112,7 @@ context = ssl.create_default_context()
 
 # Note that ovirt-imageio-proxy by default checks the certificates, so if you don't have
 # your CA certificate of the engine in the system, you need to pass it to HTTPSConnection.
-context.load_verify_locations(cafile='ca.crt')
+context.load_verify_locations(cafile=ca_file)
 
 proxy_connection = HTTPSConnection(
     proxy,
